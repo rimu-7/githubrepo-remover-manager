@@ -1,11 +1,8 @@
-import User from "@/app/_utils/UserSchema";
-import { dbConnect } from "@/lib/mongodb";
-import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
-
-// Patch openid-client timeout globally
 import { Issuer } from "openid-client";
+
+// Prevent openid-client timeout issues
 Issuer.defaultHttpOptions = { timeout: 10000 };
 
 export const authOptions = {
@@ -13,9 +10,7 @@ export const authOptions = {
     GitHubProvider({
       clientId: process.env.GITHUB_ID,
       clientSecret: process.env.GITHUB_SECRET,
-      httpOptions: {
-        timeout: 10000,
-      },
+      httpOptions: { timeout: 10000 },
       authorization: {
         params: {
           scope: "read:user user:email repo delete_repo",
@@ -31,7 +26,7 @@ export const authOptions = {
 
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60,
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
 
   callbacks: {
@@ -39,15 +34,12 @@ export const authOptions = {
       if (account?.provider === "github") {
         token.accessToken = account.access_token;
         token.githubId = profile?.id;
-        if (profile) {
-          token.login = profile.login;
-          token.name = profile.name;
-          token.email = profile.email;
-        }
+        token.login = profile?.login;
+        token.name = profile?.name;
+        token.email = profile?.email;
       }
-      if (user) {
-        token.id = user.id;
-      }
+
+      if (user) token.id = user.id;
       return token;
     },
 
@@ -62,50 +54,21 @@ export const authOptions = {
       return session;
     },
 
-    async signIn({ user, account, profile }) {
-      if (account?.provider !== "github") {
-        return true;
-      }
-
-      try {
-        await dbConnect();
-
-        const email = user.email || profile?.email || `${profile?.login}@github.placeholder.com`;
-        const name = user.name || profile?.name || profile?.login || 'GitHub User';
-
-        if (!email) {
-          console.error("No email available for GitHub user");
+    async signIn({ account, profile }) {
+      // Allow all GitHub logins (no DB)
+      if (account?.provider === "github") {
+        if (!profile?.email && !profile?.login) {
+          console.error("GitHub user missing email or login");
           return false;
         }
-
-        const existingUser = await User.findOne({ email });
-        
-        if (!existingUser) {
-          await User.create({
-            name,
-            email,
-            password: await bcrypt.hash(
-              Math.random().toString(36).slice(-8) + Date.now().toString(),
-              10
-            ),
-            provider: 'github',
-            githubId: profile?.id,
-          });
-          console.log("New user created for GitHub login:", email);
-        } else {
-          console.log("Existing user found:", email);
-        }
-
         return true;
-      } catch (error) {
-        console.error("SignIn Callback Error:", error);
-        return true; // Allow login even if DB fails
       }
+      return true;
     },
   },
 
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
+  debug: process.env.NODE_ENV === "development",
 };
 
 const handler = NextAuth(authOptions);
