@@ -5,6 +5,11 @@ import { Loader2, Github } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { LogOut } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function AuthButtons() {
   const { data: session, status } = useSession();
@@ -54,28 +59,43 @@ export default function AuthButtons() {
   if (session?.user) {
     return (
       <div className={`${buttonStyle} bg-red-100 `}>
-        <Link
-          href="/dashboard"
-          className="mr-3 text-blue-500 hover:underline hover:text-blue-600 transition-colors"
-          aria-label="Go to dashboard"
-        >
-          Hi, {session.user.name?.split(" ")[0] || session.user.login || "User"}
-        </Link>
-        <button
-          onClick={handleSignOut}
-          disabled={isLoading}
-          className="inline-flex text-white items-center bg-red-500 hover:bg-red-600 px-2 hover:scale-105 rounded-full transition-transform gap-2"
-          aria-label="Sign out"
-        >
-          {isLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-          ) : (
-            <div className="flex items-center">
-              Logout
-              <LogOut />{" "}
-            </div>
-          )}
-        </button>
+        <Tooltip>
+          <TooltipTrigger>
+            <Link
+              href="/dashboard"
+              className="mr-3 text-blue-500 hover:underline hover:text-blue-600 transition-colors"
+              aria-label="Go to dashboard"
+            >
+              Hi,{" "}
+              {session.user.name?.split(" ")[0] || session.user.login || "User"}
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Dashboard</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger>
+            <button
+              onClick={handleSignOut}
+              disabled={isLoading}
+              className="inline-flex text-white items-center bg-red-500 hover:bg-red-600 px-2 hover:scale-105 rounded-full transition-transform gap-2"
+              aria-label="Sign out"
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <div className="flex items-center">
+                  Logout
+                  <LogOut />{" "}
+                </div>
+              )}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Logout</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
     );
   }
@@ -91,8 +111,17 @@ export default function AuthButtons() {
         <Loader2 className="w-4 h-4 animate-spin mr-2" aria-hidden="true" />
       ) : (
         <>
-          <Github className="w-5 h-5 mr-2" aria-hidden="true" />
-          Login with GitHub
+          <Tooltip>
+            <TooltipTrigger>
+              <div className="flex gap-2 items-center">
+              <Github className="w-5 h-5 mr-2" aria-hidden="true" />
+              Login with GitHub
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Login with Github</p>
+            </TooltipContent>
+          </Tooltip>
         </>
       )}
     </button>

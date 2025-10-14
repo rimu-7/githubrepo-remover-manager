@@ -12,6 +12,12 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import AuthButtons from "./AuthButtons";
 import { motion } from "framer-motion";
+import Link from "next/link";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function Features() {
   const [stars, setStars] = useState(null);
@@ -91,9 +97,21 @@ export default function Features() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <div className="inline-flex items-center justify-center px-5 py-3 rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 font-semibold text-lg shadow-md">
-              ⭐ {stars ?? "Loading..."} stars on GitHub
-            </div>
+            <Tooltip>
+              <TooltipTrigger>
+                <Link
+                  href="https://github.com/rimu-7/githubrepo-remover-manager"
+                  className="inline-flex items-center justify-center px-5 py-3 rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 font-semibold text-lg shadow-md"
+                >
+                  ⭐ {stars ?? "Loading..."} stars on GitHub
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Colaborate here</p>
+                <p>https://github.com/rimu-7/githubrepo-remover-manager</p>
+              </TooltipContent>
+            </Tooltip>
+
             <AuthButtons />
           </div>
 
