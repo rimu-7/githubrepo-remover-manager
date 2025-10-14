@@ -129,12 +129,6 @@ export default function Dashboard() {
     );
   };
 
-  const testPermissions = async () => {
-    const hasPerm = await checkPermissions();
-    toast[hasPerm ? "success" : "error"](
-      `Delete permission: ${hasPerm ? "✅ OK" : "❌ Missing"}`
-    );
-  };
 
   const handleDelete = async () => {
     if (selectedRepos.length === 0) {
@@ -317,19 +311,7 @@ export default function Dashboard() {
             <Github className="w-6 h-6" /> Welcome{" "}
             {session?.user?.login || "Guest"}
           </h1>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={testPermissions}
-            disabled={checkingPermissions}
-          >
-            {checkingPermissions ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <AlertTriangle className="w-4 h-4 mr-2" />
-            )}
-            Test Permissions
-          </Button>
+          
         </div>
 
         <div className="flex items-center gap-4 mb-6">
