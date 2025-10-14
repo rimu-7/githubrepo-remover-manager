@@ -18,7 +18,7 @@ export const authOptions = {
       },
       authorization: {
         params: {
-          scope: "read:user user:email",
+          scope: "read:user user:email delete_repo",
         },
       },
     }),

@@ -26,6 +26,7 @@ export default function Dashboard() {
   const [repos, setRepos] = useState([]);
   const [selectedRepos, setSelectedRepos] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const router = useRouter();
 
   // Redirect unauthenticated users
@@ -51,8 +52,18 @@ export default function Dashboard() {
     try {
       const res = await fetch(
         `https://api.github.com/user/repos?per_page=100&sort=updated&direction=desc`,
-        { headers: { Authorization: `token ${session.accessToken}` } }
+        { 
+          headers: { 
+            Authorization: `token ${session.accessToken}`,
+            'User-Agent': 'YourApp/1.0' // GitHub requires User-Agent
+          } 
+        }
       );
+      
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+      
       const data = await res.json();
       if (Array.isArray(data)) {
         setRepos(data);
@@ -61,7 +72,7 @@ export default function Dashboard() {
         toast.error("Error fetching repositories.");
       }
     } catch (err) {
-      console.error(err);
+      console.error("Fetch repos error:", err);
       toast.error("Failed to fetch repositories.");
     } finally {
       setLoading(false);
@@ -71,7 +82,7 @@ export default function Dashboard() {
   const toggleSelect = (repoName) => {
     setSelectedRepos((prev) =>
       prev.includes(repoName)
-        ? prev.filter((name) => name !== repoName)
+        ? prev.filter((name) => name !== name)
         : [...prev, repoName]
     );
   };
@@ -112,6 +123,7 @@ export default function Dashboard() {
                   await performDelete();
                 }}
               >
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Delete
               </Button>
             </div>
@@ -124,41 +136,83 @@ export default function Dashboard() {
 
   const performDelete = async () => {
     if (selectedRepos.length === 0) return;
-    setLoading(true);
-
-    const deletedRepos = [];
-    for (const name of selectedRepos) {
-      setRepos((prev) => prev.filter((r) => r.name !== name));
-      deletedRepos.push(name);
-
-      // Delete on GitHub (async)
-      fetch(`https://api.github.com/repos/${session.user.login}/${name}`, {
-        method: "DELETE",
-        headers: { Authorization: `token ${session.accessToken}` },
-      }).then(async (res) => {
-        if (!res.ok)
-          console.error(`Failed to delete `);
-      });
-
-      // Log in MongoDB (async)
-      fetch("/api/repos/logAction", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ repoName: name, action: "delete" }),
-      }).catch(console.error);
-    }
-
+    
+    setDeleting(true);
+    const failedDeletions = [];
+    const successfulDeletions = [];
+    
+    // First, remove from local state immediately for better UX
+    setRepos(prev => prev.filter(repo => !selectedRepos.includes(repo.name)));
     setSelectedRepos([]);
-    setLoading(false);
-    toast.success(
-      `Deleted ${deletedRepos.length} ${
-        deletedRepos.length > 1 ? "repos" : "repo"
-      }!`
-    );
+
+    // Update cache immediately
     sessionStorage.setItem(
       "repos_cache",
-      JSON.stringify(repos.filter((r) => !deletedRepos.includes(r.name)))
+      JSON.stringify(repos.filter((r) => !selectedRepos.includes(r.name)))
     );
+
+    // Process deletions sequentially to avoid rate limiting
+    for (const repoName of selectedRepos) {
+      try {
+        const deleteResponse = await fetch(
+          `https://api.github.com/repos/${session.user.login}/${repoName}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `token ${session.accessToken}`,
+              'User-Agent': 'YourApp/1.0',
+              Accept: 'application/vnd.github.v3+json'
+            },
+          }
+        );
+
+        if (deleteResponse.ok) {
+          successfulDeletions.push(repoName);
+        } else {
+          console.error(`Failed to delete ${repoName}:`, deleteResponse.status, deleteResponse.statusText);
+          failedDeletions.push(repoName);
+          
+          // If deletion failed on GitHub, restore it to local state
+          try {
+            await fetchRepos(); // Refresh from GitHub to get correct state
+          } catch (refreshError) {
+            console.error("Failed to refresh repos after deletion error:", refreshError);
+          }
+        }
+      } catch (error) {
+        console.error(`Error deleting ${repoName}:`, error);
+        failedDeletions.push(repoName);
+        
+        // Restore from cache or refetch
+        try {
+          await fetchRepos();
+        } catch (refreshError) {
+          console.error("Failed to refresh repos after deletion error:", refreshError);
+        }
+      }
+    }
+
+    setDeleting(false);
+
+    // Show results
+    if (successfulDeletions.length > 0) {
+      toast.success(
+        `Successfully deleted ${successfulDeletions.length} ${successfulDeletions.length > 1 ? "repositories" : "repository"}!`
+      );
+    }
+
+    if (failedDeletions.length > 0) {
+      toast.error(
+        `Failed to delete ${failedDeletions.length} repositories: ${failedDeletions.join(', ')}`
+      );
+      // Refresh repos to show current state
+      fetchRepos();
+    }
+
+    if (successfulDeletions.length > 0 && failedDeletions.length === 0) {
+      // Refresh to get updated repo list from GitHub
+      fetchRepos();
+    }
   };
 
   if (status === "loading")
@@ -178,23 +232,29 @@ export default function Dashboard() {
             <Github className="w-6 h-6" /> Welcome{" "}
             {session?.user?.login || "Guest"}
           </h1>
-          
         </div>
 
         <div className="flex items-center gap-4 mb-6">
           <Button
             variant="destructive"
             onClick={handleDelete}
-            disabled={!selectedRepos || loading}
+            disabled={selectedRepos.length === 0 || deleting || loading}
           >
             <Trash2 className="w-4 h-4 mr-2" />
-            Delete Selected ({selectedRepos.length})
+            {deleting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              `Delete Selected (${selectedRepos.length})`
+            )}
           </Button>
           {selectedRepos.length > 0 && (
             <Button
               variant="outline"
               onClick={() => setSelectedRepos([])}
-              disabled={loading}
+              disabled={deleting || loading}
             >
               Clear Selection
             </Button>
@@ -208,10 +268,10 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {!repos ? (
-              <div className="col-span-full  text-center py-8">
+            {repos.length === 0 ? (
+              <div className="col-span-full text-center py-8">
                 <p>No repositories found.</p>
-                <Button variant="outline" onClick={fetchRepos} className="mt-2">
+                <Button variant="outline" onClick={fetchRepos} className="mt-2" disabled={deleting}>
                   Retry
                 </Button>
               </div>
@@ -219,12 +279,12 @@ export default function Dashboard() {
               repos.map((repo) => (
                 <Card
                   key={repo.id}
-                  className={`relative backdrop-blur-xs bg-transparent cursor-pointer border-2 ${
+                  className={`relative backdrop-blur-xs bg-transparent cursor-pointer border-2 transition-colors ${
                     selectedRepos.includes(repo.name)
-                      ? "border-destructive bg-destructive/50"
+                      ? "border-destructive bg-destructive/10"
                       : "border-transparent hover:border-muted-foreground/20"
                   }`}
-                  onClick={() => toggleSelect(repo.name)}
+                  onClick={() => !deleting && toggleSelect(repo.name)}
                 >
                   {selectedRepos.includes(repo.name) && (
                     <CheckCircle className="absolute top-3 right-3 text-destructive w-5 h-5" />
@@ -264,7 +324,7 @@ export default function Dashboard() {
                         {(repo.size / 1024).toFixed(2)} MB
                       </span>
                       <span
-                        className={`px-2 py-0.5 rounded-full text-white ${
+                        className={`px-2 py-0.5 rounded-full text-white text-xs ${
                           repo.private ? "bg-yellow-600" : "bg-blue-600"
                         }`}
                       >
