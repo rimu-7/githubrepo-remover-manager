@@ -18,7 +18,7 @@ export const authOptions = {
       },
       authorization: {
         params: {
-          scope: "read:user user:email delete_repo",
+          scope: "read:user user:email repo delete_repo", // Added delete_repo scope
         },
       },
     }),
@@ -39,7 +39,11 @@ export const authOptions = {
       if (account?.provider === "github") {
         token.accessToken = account.access_token;
         token.githubId = profile?.id;
-        if (profile) token.login = profile.login;
+        if (profile) {
+          token.login = profile.login;
+          token.name = profile.name;
+          token.email = profile.email;
+        }
       }
       if (user) {
         token.id = user.id;
@@ -52,6 +56,8 @@ export const authOptions = {
         session.accessToken = token.accessToken;
         session.user.id = token.id;
         session.user.login = token.login;
+        session.user.name = token.name;
+        session.user.email = token.email;
       }
       return session;
     },
@@ -93,8 +99,7 @@ export const authOptions = {
         return true;
       } catch (error) {
         console.error("SignIn Callback Error:", error);
-        // Allow login even if DB operations fail, but log the error
-        return true;
+        return true; // Allow login even if DB fails
       }
     },
   },
