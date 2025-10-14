@@ -137,7 +137,7 @@ export default function Dashboard() {
         headers: { Authorization: `token ${session.accessToken}` },
       }).then(async (res) => {
         if (!res.ok)
-          console.error(`Failed to delete ${name}`, await res.json());
+          console.error(`Failed to delete `);
       });
 
       // Log in MongoDB (async)
