@@ -100,10 +100,9 @@ export default function AuthButtons() {
     >
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-1 items-center">
             <Github className="w-5 h-5" />
-            <p className="hidden md:inline">Login with GitHub</p>
-            <p className="md:hidden">Login</p>
+            Login with GitHub            
           </div>
         </TooltipTrigger>
         <TooltipContent>

@@ -1,8 +1,4 @@
-Absolutely! Here’s a polished, **detailed `README.md`** for your GitHub Repo Manager app. I’ve structured it with clear sections, descriptions, features, screenshots placeholders, setup instructions, and usage guidance so it’s fully readable and professional.
 
----
-
-````markdown
 # GitHub Repository Manager
 
 ![GitHub Repo Manager Banner](./banner.png)
@@ -55,8 +51,8 @@ A secure, powerful, and developer-friendly dashboard to manage your GitHub repos
 
 ### Prerequisites
 
-- Node.js >= 18  
-- npm or yarn  
+- Node.js  
+- npm or yarn
 - GitHub OAuth App credentials ([create one here](https://github.com/settings/developers))  
 
 ### Installation
@@ -66,7 +62,7 @@ A secure, powerful, and developer-friendly dashboard to manage your GitHub repos
 ```bash
 git clone https://github.com/rimu-7/githubrepo-remover-manager.git
 cd githubrepo-remover-manager
-````
+```
 
 2. Install dependencies:
 
@@ -74,6 +70,8 @@ cd githubrepo-remover-manager
 npm install
 # or
 yarn install
+#or
+pnpm install
 ```
 
 3. Create a `.env.local` file and add your GitHub OAuth credentials:
@@ -92,6 +90,8 @@ NEXTAUTH_SECRET=your_random_secret_key
 npm run dev
 # or
 yarn dev
+#or 
+pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
@@ -123,19 +123,68 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Folder Structure
 
+
 ```
 .
-├─ app/
-│  ├─ dashboard/          # Dashboard page with Repo management
-│  ├─ components/         # UI components like RepoCard, AuthButtons
-│  ├─ _utils/             # Utility functions
-│  └─ layout.js            # Root layout
-├─ lib/
-│  └─ auth.js              # NextAuth configuration
-├─ public/                 # Static assets
-├─ styles/                 # Global CSS
-├─ package.json
-└─ README.md
+├── app
+│   ├── api
+│   │   ├── auth
+│   │   │   └── [...nextauth]
+│   │   └── github
+│   │       └── delete
+│   ├── components
+│   │   ├── AuthButtons.jsx
+│   │   ├── Dashborad.jsx
+│   │   ├── Features.jsx
+│   │   ├── Footer.jsx
+│   │   ├── ModeToggle.jsx
+│   │   ├── Navbar.jsx
+│   │   ├── RepoCard.jsx
+│   │   └── theme-provider.jsx
+│   ├── dashboard
+│   │   └── page.jsx
+│   ├── favicon.ico
+│   ├── globals.css
+│   ├── layout.js
+│   ├── page.js
+│   ├── privacy
+│   │   └── page.jsx
+│   ├── Providers.js
+│   └── terms
+│       └── page.jsx
+├── banner.png
+├── components
+│   └── ui
+│       ├── accordion.jsx
+│       ├── badge.jsx
+│       ├── button.jsx
+│       ├── card.jsx
+│       ├── dropdown-menu.jsx
+│       ├── separator.jsx
+│       ├── switch.jsx
+│       ├── tabs.jsx
+│       └── tooltip.jsx
+├── components.json
+├── dashboard.png
+├── eslint.config.mjs
+├── jsconfig.json
+├── lib
+│   ├── fonts.js
+│   └── utils.js
+├── next.config.mjs
+├── package.json
+├── pnpm-lock.yaml
+├── postcss.config.mjs
+├── public
+│   ├── file.svg
+│   ├── globe.svg
+│   ├── next.svg
+│   ├── vercel.svg
+│   └── window.svg
+└── README.md
+
+15 directories, 42 files
+
 ```
 
 ---
