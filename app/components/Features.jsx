@@ -140,7 +140,7 @@ export default function Features() {
       </section>
 
       {/* ⚙️ Features */}
-      <section className="py-24">
+      <section className="py-24 px-4">
         <div className="container mx-auto ">
           <div className="text-center flex flex-col gap-4">
             <span className="mb-4 px-5 py-3 text-5xl  font-bold text-indigo-500 dark:text-indigo-300">
