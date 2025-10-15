@@ -4,6 +4,13 @@ import Providers from "./Providers";
 import { ThemeProvider } from "./components/theme-provider";
 import Footer from "./components/Footer";
 import { Toaster } from "sonner";
+import { JetBrains_Mono } from "next/font/google";
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains",
+  display: "swap",
+});
 
 export const metadata = {
   title: "GitHub Repo Manager",
@@ -28,15 +35,17 @@ export default function RootLayout({ children }) {
   };
   return (
     <html lang="en" suppressHydrationWarning>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
+      <body
+        className={` antialiased bg-gray-50 dark:bg-neutral-900 text-gray-900 dark:text-gray-50`}
       >
-        <body className="antialiased bg-gray-50 dark:bg-neutral-900 text-gray-900 dark:text-gray-50">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
           {/* Background Patterns */}
-          <div className="fixed inset-0 z-0 pointer-events-none">
+          <div className="  fixed inset-0 z-0 pointer-events-none">
             <div
               className="absolute inset-0 z-0 opacity-95 dark:hidden"
               style={backgroundPatternStyle}
@@ -46,16 +55,19 @@ export default function RootLayout({ children }) {
               style={darkBackgroundPatternStyle}
             />
           </div>
+
           <Providers>
             <Navbar />
-            <main className="container mx-auto p-6">
-              <Toaster richColors closeButton position="top-center" />
-              {children}
-            </main>
+            <div className="backdrop-blur-xs">
+              <main className="container mx-auto">
+                <Toaster richColors closeButton position="top-center" />
+                {children}
+              </main>
+            </div>
             <Footer />
           </Providers>
-        </body>
-      </ThemeProvider>
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

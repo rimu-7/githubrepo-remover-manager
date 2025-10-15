@@ -1,10 +1,9 @@
 "use client";
 
 import { useSession, signIn, signOut } from "next-auth/react";
-import { Loader2, Github } from "lucide-react";
-import Link from "next/link";
+import { Loader2, Github, LogOut } from "lucide-react";
 import { useState } from "react";
-import { LogOut } from "lucide-react";
+import Link from "next/link";
 import {
   Tooltip,
   TooltipContent,
@@ -16,28 +15,32 @@ export default function AuthButtons() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleGitHubLogin = async () => {
-    try {
-      setIsLoading(true);
-      await signIn("github", {
-        callbackUrl: "/dashboard",
-        redirect: true,
-      });
-    } catch (error) {
-      console.error("Login error:", error);
-      setIsLoading(false);
-    }
+    setIsLoading(true);
+    await signIn("github", { callbackUrl: "/dashboard" });
   };
 
   const handleSignOut = async () => {
     try {
-      setIsLoading(true);
-      await signOut({
-        callbackUrl: "/",
-        redirect: true,
-      });
-    } catch (error) {
-      console.error("Logout error:", error);
-      setIsLoading(false);
+      if (session?.user) {
+        await fetch("/api/logAction", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user: {
+              id: session.user.id,
+              name: session.user.name,
+              email: session.user.email,
+              login: session.user.login,
+            },
+            action: "logout",
+            details: {},
+          }),
+        });
+      }
+    } catch (err) {
+      console.error("Error logging logout:", err);
+    } finally {
+      await signOut({ callbackUrl: "/" });
     }
   };
 
@@ -46,50 +49,38 @@ export default function AuthButtons() {
 
   if (status === "loading" || isLoading) {
     return (
-      <div
-        className={`${buttonStyle} bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200`}
-        aria-live="polite"
-      >
-        <Loader2 className="w-4 h-4 animate-spin mr-2" aria-hidden="true" />
-        Loading...
+      <div className={`${buttonStyle} `}>
+        <Loader2 className="w-4 h-4 animate-spin mr-2" /> Loading...
       </div>
     );
   }
 
   if (session?.user) {
     return (
-      <div className={`${buttonStyle} bg-red-100 `}>
+      <div className={`${buttonStyle} bg-red-100 gap-3`}>
         <Tooltip>
-          <TooltipTrigger>
+          <TooltipTrigger asChild>
             <Link
               href="/dashboard"
-              className="mr-3 text-blue-500 hover:underline hover:text-blue-600 transition-colors"
-              aria-label="Go to dashboard"
+              className="text-blue-600 hover:underline"
+              aria-label="Dashboard"
             >
-              Hi,{" "}
-              {session.user.name?.split(" ")[0] || session.user.login || "User"}
+              Hi, {session.user.name?.split(" ")[0] || session.user.login}
             </Link>
           </TooltipTrigger>
           <TooltipContent>
             <p>Dashboard</p>
           </TooltipContent>
         </Tooltip>
+
         <Tooltip>
-          <TooltipTrigger>
+          <TooltipTrigger asChild>
             <button
               onClick={handleSignOut}
-              disabled={isLoading}
-              className="inline-flex text-white items-center bg-red-500 hover:bg-red-600 px-2 hover:scale-105 rounded-full transition-transform gap-2"
-              aria-label="Sign out"
+              className="bg-red-500 text-white px-3 py-1 rounded-full flex gap-2 items-center hover:bg-red-600"
             >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-              ) : (
-                <div className="flex items-center">
-                  Logout
-                  <LogOut />{" "}
-                </div>
-              )}
+              <LogOut className="w-4 h-4" />
+              Logout
             </button>
           </TooltipTrigger>
           <TooltipContent>
@@ -107,23 +98,18 @@ export default function AuthButtons() {
       className={`${buttonStyle} bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200`}
       aria-label="Sign in with GitHub"
     >
-      {isLoading ? (
-        <Loader2 className="w-4 h-4 animate-spin mr-2" aria-hidden="true" />
-      ) : (
-        <>
-          <Tooltip>
-            <TooltipTrigger>
-              <div className="flex gap-2 items-center">
-              <Github className="w-5 h-5 mr-2" aria-hidden="true" />
-              Login with GitHub
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Login with Github</p>
-            </TooltipContent>
-          </Tooltip>
-        </>
-      )}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="flex gap-2 items-center">
+            <Github className="w-5 h-5" />
+            <p className="hidden md:inline">Login with GitHub</p>
+            <p className="md:hidden">Login</p>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Login with GitHub</p>
+        </TooltipContent>
+      </Tooltip>
     </button>
   );
 }

@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@fontsource/rubik-burned':
+        specifier: ^5.2.7
+        version: 5.2.7
       '@radix-ui/react-accordion':
         specifier: ^1.2.12
         version: 1.2.12(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -159,6 +162,9 @@ packages:
 
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
+
+  '@fontsource/rubik-burned@5.2.7':
+    resolution: {integrity: sha512-NM+HLfaMkTnDQCXEWDL3bKV410CInrET21xcA5z28fMF2mwOmzUoyu2WLcVx1Ui2BshFyKnsOYT2gBNcC7vZQA==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -2532,6 +2538,8 @@ snapshots:
       react-dom: 19.1.0(react@19.1.0)
 
   '@floating-ui/utils@0.2.10': {}
+
+  '@fontsource/rubik-burned@5.2.7': {}
 
   '@humanfs/core@0.19.1': {}
 

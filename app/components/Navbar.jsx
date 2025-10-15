@@ -12,7 +12,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="border-b backdrop-blur-md sticky top-0 z-50 w-full">
+    <header className=" backdrop-blur-md sticky top-0 z-50 w-full">
       <nav className="container mx-auto flex justify-between items-center py-4 px-6">
         {/* Logo */}
         <Link
@@ -41,7 +41,7 @@ export default function Navbar() {
 
       {/* Mobile Dropdown Menu */}
       {menuOpen && (
-        <div className="md:hidden border-t backdrop-blur-md">
+        <div className="md:hidden  ">
           <div className="flex items-center gap-4 px-6 py-4 animate-slideDown">
             <AuthButtons />
             <ModeToggle />
